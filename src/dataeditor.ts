@@ -63,7 +63,7 @@ export class DataAPIEditorProvider implements vscode.CustomTextEditorProvider {
 
     // Receive message from the webview.
     webviewPanel.webview.onDidReceiveMessage((e) => {
-      switch (e.type) {
+      switch (e.command) {
         case "add":
           // this.addNewScratch(document);
           return;
@@ -71,6 +71,13 @@ export class DataAPIEditorProvider implements vscode.CustomTextEditorProvider {
         case "delete":
           // this.deleteScratch(document, e.id);
           return;
+        case "startup":
+          console.log("message received");
+          break;
+        case "testing":
+          console.log("reachedBrain");
+          webviewPanel.webview.postMessage({ command: "refactor" });
+          break;
       }
     });
 
@@ -94,12 +101,8 @@ export class DataAPIEditorProvider implements vscode.CustomTextEditorProvider {
       vscode.Uri.joinPath(this.context.extensionUri, "media", "style.css")
     );
 
-    const styleVSCodeUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, "media", "vscode.css")
-    );
-
     const scriptUri = webview.asWebviewUri(
-      vscode.Uri.joinPath(this.context.extensionUri, "media", "dataeditor.js")
+      vscode.Uri.joinPath(this.context.extensionUri, "out", "main.wv.js")
     );
 
     const nonce = getNonce();
@@ -116,13 +119,19 @@ export class DataAPIEditorProvider implements vscode.CustomTextEditorProvider {
         <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}; script-src 'nonce-${nonce}'">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link href="${styleResetUri}" rel="stylesheet" />
-        <link href="${styleVSCodeUri}" rel="stylesheet" />
         <link href="${styleMainUri}" rel="stylesheet" />
-        <title>Cat Scratch</title>
+        <title>SWA Data API Configuration</title>
       </head>
       <body>
-        <div class="main">
-        </div>
+        <div id="root"></div>
+        <script nonce="${nonce}">
+          const vscode = acquireVsCodeApi();
+          window.onload = function() {
+            vscode.postMessage({ command: 'startup' });
+            console.log('HTML started up.');
+          };
+          const state = vscode.getState();
+        </script>
 
         <script nonce="${nonce}" src="${scriptUri}"></script>
       </body>
