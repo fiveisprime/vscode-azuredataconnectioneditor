@@ -1,9 +1,13 @@
 import * as React from "react";
-// import * as Runtime from "./Runtime";
+
+import Runtime from "./Runtime";
+import Entity from "./Entity";
+import Host from "./Host";
 
 interface vscode {
   postMessage(message: any): void;
 }
+
 declare const vscode: vscode;
 declare const state: any;
 
@@ -13,10 +17,9 @@ const sendMessage = () => {
 };
 
 const App = () => {
+  const dataConfig = JSON.parse(state.text);
   const [runtimes, setRuntimes] = React.useState({});
   const [entities, setEntities] = React.useState({});
-
-  const dataConfig = JSON.parse(state.text);
 
   React.useEffect(() => {
     setEntities(dataConfig.entities);
@@ -33,17 +36,18 @@ const App = () => {
 
   return (
     <div>
-      {Object.keys(runtimes).map((runtime) => (
-        <div className="runtime">
-          <span>{runtime}</span>
-          <div>{JSON.stringify(runtimes[runtime])}</div>
-        </div>
+      <h1>Runtimes</h1>
+      {Object.keys(runtimes).map((runtime) =>
+        runtime === "host" ? (
+          <Host src={runtimes[runtime]} />
+        ) : (
+          <Runtime name={runtime} src={runtimes[runtime]} />
+        )
+      )}
+      <h1>Entities</h1>
+      {Object.keys(entities).map((entity) => (
+        <Entity name={entity} src={entities[entity]} />
       ))}
-      <div>
-        {Object.keys(entities).map((entity) => (
-          <div>{entity}</div>
-        ))}
-      </div>
     </div>
   );
 };
